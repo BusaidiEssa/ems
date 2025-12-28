@@ -10,18 +10,30 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
+    const savedLanguage = localStorage.getItem('language');
     
     if (token && user) {
       try {
         setCurrentUser(JSON.parse(user));
       } catch (error) {
-        console.error('Error parsing user data:', error);
+        console.error('Error parsing user:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       }
     }
+
+    if (savedLanguage) {
+      setLanguage(savedLanguage);
+    }
+    
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('language', language);
+    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = language;
+  }, [language]);
 
   const login = (token, user) => {
     localStorage.setItem('token', token);
@@ -35,11 +47,16 @@ export const AppProvider = ({ children }) => {
     setCurrentUser(null);
   };
 
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'en' ? 'ar' : 'en');
+  };
+
   const value = {
     currentUser,
     setCurrentUser,
     language,
     setLanguage,
+    toggleLanguage,
     login,
     logout,
     loading

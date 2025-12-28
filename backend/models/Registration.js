@@ -17,7 +17,7 @@ const registrationSchema = new mongoose.Schema({
   },
   qrCode: {
     type: String,
-    required: true
+    default: ''
   },
   checkedIn: {
     type: Boolean,

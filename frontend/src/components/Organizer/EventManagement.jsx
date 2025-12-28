@@ -5,6 +5,8 @@ import { eventsAPI } from '../../utils/api';
 import StakeholderForms from './StakeholderForms';
 import RegistrationsList from './RegistrationsList';
 import EmailAnnouncements from './EmailAnnouncements';
+import Analytics from './Analytics';
+import QRScanner from './QRScanner';
 
 function EventManagement() {
   const { eventId } = useParams();
@@ -69,10 +71,11 @@ function EventManagement() {
         </p>
       </div>
 
-      <div className="flex gap-4 mb-6 border-b border-gray-200">
+      {/* TABS - Added Scanner Tab */}
+      <div className="flex gap-4 mb-6 border-b border-gray-200 overflow-x-auto">
         <button
           onClick={() => setActiveTab('forms')}
-          className={`px-4 py-2 font-semibold ${
+          className={`px-4 py-2 font-semibold whitespace-nowrap ${
             activeTab === 'forms'
               ? 'border-b-2 border-blue-600 text-blue-600'
               : 'text-gray-600 hover:text-gray-800'
@@ -82,7 +85,7 @@ function EventManagement() {
         </button>
         <button
           onClick={() => setActiveTab('registrations')}
-          className={`px-4 py-2 font-semibold ${
+          className={`px-4 py-2 font-semibold whitespace-nowrap ${
             activeTab === 'registrations'
               ? 'border-b-2 border-blue-600 text-blue-600'
               : 'text-gray-600 hover:text-gray-800'
@@ -90,9 +93,30 @@ function EventManagement() {
         >
           Registrations
         </button>
+        {/* ✅ ADDED SCANNER TAB BUTTON */}
+        <button
+          onClick={() => setActiveTab('scanner')}
+          className={`px-4 py-2 font-semibold whitespace-nowrap ${
+            activeTab === 'scanner'
+              ? 'border-b-2 border-blue-600 text-blue-600'
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          Check-in Scanner
+        </button>
+        <button
+          onClick={() => setActiveTab('analytics')}
+          className={`px-4 py-2 font-semibold whitespace-nowrap ${
+            activeTab === 'analytics'
+              ? 'border-b-2 border-blue-600 text-blue-600'
+              : 'text-gray-600 hover:text-gray-800'
+          }`}
+        >
+          Analytics
+        </button>
         <button
           onClick={() => setActiveTab('email')}
-          className={`px-4 py-2 font-semibold ${
+          className={`px-4 py-2 font-semibold whitespace-nowrap ${
             activeTab === 'email'
               ? 'border-b-2 border-blue-600 text-blue-600'
               : 'text-gray-600 hover:text-gray-800'
@@ -102,9 +126,12 @@ function EventManagement() {
         </button>
       </div>
 
+      {/* TAB CONTENT */}
       <div>
         {activeTab === 'forms' && <StakeholderForms eventId={eventId} />}
         {activeTab === 'registrations' && <RegistrationsList eventId={eventId} />}
+        {activeTab === 'scanner' && <QRScanner eventId={eventId} />}
+        {activeTab === 'analytics' && <Analytics eventId={eventId} />}
         {activeTab === 'email' && <EmailAnnouncements eventId={eventId} />}
       </div>
     </div>
