@@ -8,9 +8,9 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// ============================================
-// EMAIL TRANSPORTER
-// ============================================
+// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+//        EMAIL TRANSPORTER
+// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
 const createTransporter = () => {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
     console.warn('⚠️ Email not configured');
@@ -26,9 +26,9 @@ const createTransporter = () => {
   });
 };
 
-// ============================================
-// GET REGISTRATIONS
-// ============================================
+// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+//          GET REGISTRATIONS
+// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
 router.get('/event/:eventId', authenticateToken, async (req, res) => {
   try {
     const registrations = await Registration.find({ 
@@ -49,9 +49,9 @@ router.get('/event/:eventId', authenticateToken, async (req, res) => {
   }
 });
 
-// ============================================
+// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
 // CREATE REGISTRATION - FIXED UNIQUE QR CODE
-// ============================================
+// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
 router.post('/', async (req, res) => {
   try {
     console.log('📥 Registration request');
@@ -80,9 +80,9 @@ router.post('/', async (req, res) => {
     console.log('✅ Event:', event.title);
     console.log('✅ Group:', group.name);
 
-    // ============================================
+    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
     // SAVE REGISTRATION FIRST TO GET ID
-    // ============================================
+    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
     console.log('💾 Creating registration...');
     const registration = new Registration({
       eventId,
@@ -95,9 +95,9 @@ router.post('/', async (req, res) => {
     await registration.save();
     console.log('✅ Registration saved:', registration._id);
 
-    // ============================================
+    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
     // GENERATE QR CODE WITH REGISTRATION ID
-    // ============================================
+    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
     console.log('🔲 Generating unique QR code...');
     const qrData = JSON.stringify({
       registrationId: registration._id.toString(),
@@ -120,9 +120,9 @@ router.post('/', async (req, res) => {
     await registration.save();
     console.log('✅ QR code generated with registration ID');
 
-    // ============================================
-    // SEND EMAIL
-    // ============================================
+    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+    //              SEND EMAIL
+    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
     const transporter = createTransporter();
     const participantEmail = formData.Email || formData.email;
     const participantName = formData.Name || formData.name || 'Participant';
@@ -212,9 +212,9 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ============================================
-// TOGGLE CHECK-IN
-// ============================================
+// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+//          TOGGLE CHECK-IN
+// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
 router.patch('/:id/checkin', authenticateToken, async (req, res) => {
   try {
     const registration = await Registration.findById(req.params.id);

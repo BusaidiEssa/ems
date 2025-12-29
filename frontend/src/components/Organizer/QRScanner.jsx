@@ -4,9 +4,9 @@ import { Scanner } from '@yudiel/react-qr-scanner';
 import { registrationsAPI, stakeholderGroupsAPI } from '../../utils/api';
 
 function QRScanner({ eventId }) {
-  // ============================================
+  // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
   // STATE MANAGEMENT
-  // ============================================
+  // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
   const [registrations, setRegistrations] = useState([]);
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,9 +14,9 @@ function QRScanner({ eventId }) {
   const [scanResult, setScanResult] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
 
-  // ============================================
-  // FETCH DATA ON COMPONENT MOUNT
-  // ============================================
+  // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+  //    FETCH DATA ON COMPONENT MOUNT
+  // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
   useEffect(() => {
     fetchData();
   }, [eventId]);
@@ -37,9 +37,9 @@ function QRScanner({ eventId }) {
     }
   };
 
-  // ============================================
+  // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
   // HANDLE CHECK-IN (MANUAL OR QR SCAN)
-  // ============================================
+  //🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
   const handleCheckIn = async (regId) => {
     try {
       const response = await registrationsAPI.toggleCheckIn(regId);
@@ -70,9 +70,9 @@ function QRScanner({ eventId }) {
     }
   };
 
-  // ============================================
-// HANDLE QR CODE SCAN - FIXED TO USE REGISTRATION ID
-// ============================================
+  // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+//          HANDLE QR CODE SCAN 
+// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
 const handleQRScan = (result) => {
   if (!result || !result[0]) return;
   
@@ -111,17 +111,17 @@ const handleQRScan = (result) => {
   }
 };
 
-  // ============================================
-  // HANDLE SCAN ERROR
-  // ============================================
+  // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+  //         HANDLE SCAN ERROR
+  // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
   const handleScanError = (error) => {
     console.error('QR Scanner error:', error);
     // Don't show error to user as scanning continuously produces errors
   };
 
-  // ============================================
-  // FILTER REGISTRATIONS BY SEARCH
-  // ============================================
+  // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+  //      FILTER REGISTRATIONS BY SEARCH
+  // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
   const filteredRegistrations = registrations.filter(reg => {
     const nameValue = reg.formData?.Name || reg.formData?.name || '';
     const emailValue = reg.formData?.Email || reg.formData?.email || '';
@@ -133,16 +133,16 @@ const handleQRScan = (result) => {
     );
   });
 
-  // ============================================
+  // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
   // CALCULATE STATISTICS
-  // ============================================
+  // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
   const totalRegistrations = registrations.length;
   const checkedInCount = registrations.filter(r => r.checkedIn).length;
   const pendingCount = totalRegistrations - checkedInCount;
 
-  // ============================================
-  // LOADING STATE
-  // ============================================
+  // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+  //            LOADING STATE
+  // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -151,9 +151,9 @@ const handleQRScan = (result) => {
     );
   }
 
-  // ============================================
-  // MAIN RENDER
-  // ============================================
+  // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+  //            MAIN RENDER
+  // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
   return (
     <div>
       {/* Header with Scan Button */}
