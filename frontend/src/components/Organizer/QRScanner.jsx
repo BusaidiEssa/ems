@@ -1,45 +1,46 @@
 import { useState, useEffect } from 'react';
-import { Camera, CheckCircle, XCircle, Loader, Search, X, Scan } from 'lucide-react';
+import { Camera, CheckCircle, XCircle, Loader, Search, X, Scan, RefreshCw } from 'lucide-react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 import { registrationsAPI, stakeholderGroupsAPI } from '../../utils/api';
 
 function QRScanner({ eventId }) {
-  // ============================================
   // STATE MANAGEMENT
-  // ============================================
   const [registrations, setRegistrations] = useState([]);
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [scanResult, setScanResult] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
+  const [debugInfo, setDebugInfo] = useState(null);
 
-  // ============================================
   // FETCH DATA ON COMPONENT MOUNT
-  // ============================================
   useEffect(() => {
     fetchData();
   }, [eventId]);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       const [regsResponse, groupsResponse] = await Promise.all([
         registrationsAPI.getByEvent(eventId),
         stakeholderGroupsAPI.getByEvent(eventId)
       ]);
       
+      console.log('📊 Loaded registrations:', regsResponse.data.registrations.length);
       setRegistrations(regsResponse.data.registrations);
       setGroups(groupsResponse.data.groups);
     } catch (err) {
       console.error('Error fetching data:', err);
+      setScanResult({
+        success: false,
+        message: '❌ Failed to load registrations. Please refresh.'
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  // ============================================
-  // HANDLE CHECK-IN (MANUAL OR QR SCAN)
-  // ============================================
+  // HANDLE CHECK-IN
   const handleCheckIn = async (regId) => {
     try {
       const response = await registrationsAPI.toggleCheckIn(regId);
@@ -70,58 +71,96 @@ function QRScanner({ eventId }) {
     }
   };
 
-  // ============================================
-// HANDLE QR CODE SCAN - FIXED TO USE REGISTRATION ID
-// ============================================
-const handleQRScan = (result) => {
-  if (!result || !result[0]) return;
-  
-  try {
-    const scannedData = result[0].rawValue;
-    console.log('QR Code scanned:', scannedData);
+  // HANDLE QR CODE SCAN - ENHANCED WITH DEBUGGING
+  const handleQRScan = (result) => {
+    if (!result || !result[0]) return;
     
-    // Parse the JSON data from QR code
-    const qrData = JSON.parse(scannedData);
-    console.log('Parsed QR data:', qrData);
-    
-    // Find registration by the registration ID from QR code
-    const foundReg = registrations.find(reg => 
-      reg._id === qrData.registrationId
-    );
-    
-    if (foundReg) {
-      console.log('✅ Registration found:', foundReg._id);
-      handleCheckIn(foundReg._id);
-      setShowScanner(false);
-    } else {
-      console.log('❌ Registration not found for ID:', qrData.registrationId);
+    try {
+      const scannedData = result[0].rawValue;
+      console.log('🔍 QR Code scanned:', scannedData);
+      
+      // Show debug info
+      setDebugInfo({
+        raw: scannedData,
+        timestamp: new Date().toISOString()
+      });
+
+      // Try to parse as JSON
+      let qrData;
+      try {
+        qrData = JSON.parse(scannedData);
+        console.log('✅ Parsed QR data:', qrData);
+      } catch (parseError) {
+        console.error('❌ JSON parse error:', parseError);
+        setScanResult({
+          success: false,
+          message: '❌ Invalid QR code format. Expected JSON data.'
+        });
+        setTimeout(() => setScanResult(null), 3000);
+        return;
+      }
+
+      // Validate QR data structure
+      if (!qrData.registrationId) {
+        console.error('❌ Missing registrationId in QR data:', qrData);
+        setScanResult({
+          success: false,
+          message: '❌ Invalid QR code. Missing registration ID.'
+        });
+        setTimeout(() => setScanResult(null), 3000);
+        return;
+      }
+
+      console.log('🔎 Looking for registration ID:', qrData.registrationId);
+      console.log('📋 Available registrations:', registrations.length);
+      console.log('📋 Registration IDs:', registrations.map(r => r._id));
+
+      // Find registration by ID
+      const foundReg = registrations.find(reg => 
+        reg._id === qrData.registrationId
+      );
+      
+      if (foundReg) {
+        console.log('✅ Registration found:', foundReg._id);
+        handleCheckIn(foundReg._id);
+        setShowScanner(false);
+        setDebugInfo(null);
+      } else {
+        console.log('❌ Registration not found for ID:', qrData.registrationId);
+        
+        // Check if it might be an event mismatch
+        if (qrData.eventId && qrData.eventId !== eventId) {
+          setScanResult({
+            success: false,
+            message: '❌ This QR code is for a different event.'
+          });
+        } else {
+          setScanResult({
+            success: false,
+            message: '❌ Registration not found. Try refreshing the list.'
+          });
+        }
+        setTimeout(() => setScanResult(null), 3000);
+      }
+    } catch (error) {
+      console.error('❌ QR scan error:', error);
       setScanResult({
         success: false,
-        message: '❌ Invalid QR code. Registration not found.'
+        message: '❌ Error processing QR code.'
       });
       setTimeout(() => setScanResult(null), 3000);
     }
-  } catch (error) {
-    console.error('QR parsing error:', error);
-    setScanResult({
-      success: false,
-      message: '❌ Invalid QR code format.'
-    });
-    setTimeout(() => setScanResult(null), 3000);
-  }
-};
-
-  // ============================================
-  // HANDLE SCAN ERROR
-  // ============================================
-  const handleScanError = (error) => {
-    console.error('QR Scanner error:', error);
-    // Don't show error to user as scanning continuously produces errors
   };
 
-  // ============================================
+  // HANDLE SCAN ERROR
+  const handleScanError = (error) => {
+    // Don't log every frame error
+    if (!error?.message?.includes('No QR code found')) {
+      console.error('QR Scanner error:', error);
+    }
+  };
+
   // FILTER REGISTRATIONS BY SEARCH
-  // ============================================
   const filteredRegistrations = registrations.filter(reg => {
     const nameValue = reg.formData?.Name || reg.formData?.name || '';
     const emailValue = reg.formData?.Email || reg.formData?.email || '';
@@ -133,16 +172,12 @@ const handleQRScan = (result) => {
     );
   });
 
-  // ============================================
   // CALCULATE STATISTICS
-  // ============================================
   const totalRegistrations = registrations.length;
   const checkedInCount = registrations.filter(r => r.checkedIn).length;
   const pendingCount = totalRegistrations - checkedInCount;
 
-  // ============================================
   // LOADING STATE
-  // ============================================
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -151,34 +186,41 @@ const handleQRScan = (result) => {
     );
   }
 
-  // ============================================
-  // MAIN RENDER
-  // ============================================
   return (
     <div>
-      {/* Header with Scan Button */}
+      {/* Header with Scan Button and Refresh */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Check-in Scanner</h2>
-        <button
-          onClick={() => setShowScanner(!showScanner)}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition shadow-lg ${
-            showScanner 
-              ? 'bg-red-600 text-white hover:bg-red-700' 
-              : 'bg-blue-600 text-white hover:bg-blue-700'
-          }`}
-        >
-          {showScanner ? (
-            <>
-              <X className="w-5 h-5" />
-              Close Camera
-            </>
-          ) : (
-            <>
-              <Camera className="w-5 h-5" />
-              Scan QR Code
-            </>
-          )}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={fetchData}
+            className="flex items-center gap-2 px-4 py-3 rounded-lg font-semibold transition shadow-lg bg-gray-600 text-white hover:bg-gray-700"
+            title="Refresh registrations list"
+          >
+            <RefreshCw className="w-5 h-5" />
+            Refresh
+          </button>
+          <button
+            onClick={() => setShowScanner(!showScanner)}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition shadow-lg ${
+              showScanner 
+                ? 'bg-red-600 text-white hover:bg-red-700' 
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
+          >
+            {showScanner ? (
+              <>
+                <X className="w-5 h-5" />
+                Close Camera
+              </>
+            ) : (
+              <>
+                <Camera className="w-5 h-5" />
+                Scan QR Code
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* QR Code Scanner Modal */}
@@ -192,12 +234,27 @@ const handleQRScan = (result) => {
                 <p className="text-sm text-gray-600 mt-1">Position QR code in camera view</p>
               </div>
               <button
-                onClick={() => setShowScanner(false)}
+                onClick={() => {
+                  setShowScanner(false);
+                  setDebugInfo(null);
+                }}
                 className="p-2 hover:bg-gray-100 rounded-full transition"
               >
                 <X className="w-6 h-6 text-gray-600" />
               </button>
             </div>
+
+            {/* Debug Info */}
+            {debugInfo && (
+              <div className="mb-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                <p className="text-xs font-mono text-yellow-800 break-all">
+                  Last scan: {debugInfo.raw}
+                </p>
+                <p className="text-xs text-yellow-600 mt-1">
+                  Time: {new Date(debugInfo.timestamp).toLocaleTimeString()}
+                </p>
+              </div>
+            )}
 
             {/* Instructions */}
             <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
@@ -215,12 +272,12 @@ const handleQRScan = (result) => {
                 onScan={handleQRScan}
                 onError={handleScanError}
                 constraints={{
-                  facingMode: 'environment' // Use back camera on mobile
+                  facingMode: 'environment'
                 }}
                 styles={{
                   container: {
                     width: '100%',
-                    paddingTop: '75%', // 4:3 aspect ratio
+                    paddingTop: '75%',
                     position: 'relative'
                   },
                   video: {
@@ -237,24 +294,31 @@ const handleQRScan = (result) => {
               {/* Scanner Frame Overlay */}
               <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute inset-8 border-4 border-blue-500 rounded-lg">
-                  {/* Corner markers */}
                   <div className="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-blue-500"></div>
                   <div className="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-blue-500"></div>
                   <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-blue-500"></div>
                   <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-blue-500"></div>
                 </div>
                 
-                {/* Scanning animation line */}
                 <div className="absolute inset-8 overflow-hidden rounded-lg">
                   <div className="absolute top-0 left-0 right-0 h-1 bg-blue-500 animate-pulse"></div>
                 </div>
               </div>
             </div>
 
+            {/* Stats */}
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
+              <p>📊 Loaded {registrations.length} registrations</p>
+              <p>✅ {checkedInCount} checked in | ⏳ {pendingCount} pending</p>
+            </div>
+
             {/* Close Button */}
             <div className="mt-4">
               <button
-                onClick={() => setShowScanner(false)}
+                onClick={() => {
+                  setShowScanner(false);
+                  setDebugInfo(null);
+                }}
                 className="w-full bg-gray-200 text-gray-700 py-3 rounded-lg hover:bg-gray-300 font-semibold transition"
               >
                 Cancel Scanning
@@ -370,6 +434,7 @@ const handleQRScan = (result) => {
                         <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">
                           {groupName}
                         </span>
+                        <p className="text-xs text-gray-400 mt-1">ID: {reg._id}</p>
                       </div>
                       
                       <button
@@ -429,15 +494,15 @@ const handleQRScan = (result) => {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-blue-600 font-bold">•</span>
+              <span>Click <strong>"Refresh"</strong> if you just registered someone and they're not showing up</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-600 font-bold">•</span>
               <span>Use the search bar to quickly find participants by name or email</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-blue-600 font-bold">•</span>
               <span>Click <strong>"Check In"</strong> button for manual check-in without scanning</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-blue-600 font-bold">•</span>
-              <span>Click <strong>"Undo Check-in"</strong> if someone was checked in by mistake</span>
             </li>
           </ul>
         </div>

@@ -1,3 +1,5 @@
+// THe form the particpant sees
+
 import { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { Globe, Users, CheckCircle, Loader, ArrowLeft, AlertCircle } from 'lucide-react';
@@ -202,23 +204,107 @@ function RegistrationPage() {
             {selectedGroup.fields.map(field => (
               <div key={field._id || field.name}>
                 <label className="block text-sm font-semibold mb-2">
-                  {field.name}
-                  {field.required && <span className="text-red-500">*</span>}
+                  {field.name} {field.required && <span className="text-red-500">*</span>}
                 </label>
-                
-                {field.type === 'textarea' ? (
+
+                {/* Textarea */}
+                {field.type === 'textarea' && (
                   <textarea
                     value={formData[field.name] || ''}
-                    onChange={(e) => setFormData({...formData, [field.name]: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
                     className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
                     rows="4"
                     required={field.required}
                   />
-                ) : (
+                )}
+
+                {/* Select / Dropdown */}
+                {field.type === 'select' && (
+                  <select
+                    value={formData[field.name] || ''}
+                    onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    required={field.required}
+                  >
+                    <option value="">Select an option</option>
+                    {(field.options || []).map((option, idx) => (
+                      <option key={idx} value={option}>{option}</option>
+                    ))}
+                  </select>
+                )}
+
+                {/* Radio Buttons */}
+                {field.type === 'radio' && (
+                  <div className="space-y-2">
+                    {(field.options || []).map((option, idx) => (
+                      <label key={idx} className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name={field.name}
+                          value={option}
+                          checked={formData[field.name] === option}
+                          onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                          className="w-4 h-4"
+                          required={field.required}
+                        />
+                        <span>{option}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                {/* Multiple Checkboxes */}
+                {field.type === 'checkbox' && Array.isArray(field.options) && (
+                  <div className="space-y-2">
+                    {field.options.map((option, idx) => (
+                      <label key={idx} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          name={field.name}
+                          value={option}
+                          checked={Array.isArray(formData[field.name]) && formData[field.name].includes(option)}
+                          onChange={(e) => {
+                            const currentValues = Array.isArray(formData[field.name])
+                              ? formData[field.name]
+                              : [];
+                            if (e.target.checked) {
+                              // add option
+                              setFormData({ ...formData, [field.name]: [...currentValues, option] });
+                            } else {
+                              // remove option
+                              setFormData({
+                                ...formData,
+                                [field.name]: currentValues.filter((val) => val !== option),
+                              });
+                            }
+                          }}
+                          className="w-5 h-5"
+                          required={field.required && (!formData[field.name] || formData[field.name].length === 0)}
+                        />
+                        <span className="text-sm">{option}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+
+                {/* Date input */}
+                {field.type === 'date' && (
+                  <input
+                    type="date"
+                    value={formData[field.name] || ''}
+                    onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                    className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    required={field.required}
+                  />
+                )}
+
+                {/* Regular inputs */}
+                {!['textarea', 'select', 'radio', 'checkbox', 'date'].includes(field.type) && (
                   <input
                     type={field.type}
                     value={formData[field.name] || ''}
-                    onChange={(e) => setFormData({...formData, [field.name]: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
                     className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
                     required={field.required}
                   />

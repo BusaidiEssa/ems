@@ -8,11 +8,15 @@ const fieldSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ['text', 'email', 'number', 'tel', 'textarea', 'checkbox', 'date']
+    enum: ['text', 'email', 'number', 'tel', 'textarea', 'checkbox', 'date', 'time', 'select', 'radio']
   },
   required: {
     type: Boolean,
     default: false
+  },
+  options: {
+    type: [String],  //  ADDED: Array of strings for dropdown/radio/checkbox options
+    default: []
   }
 });
 

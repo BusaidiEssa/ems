@@ -1,3 +1,4 @@
+// DASHBOARD COMPONENT everything gets assembed her
 import { useContext } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AppContext from '../../context/AppContext';

@@ -1,3 +1,4 @@
+//ANALYTICS COMPONENT
 import { useState, useEffect } from 'react';
 import { Loader, TrendingUp, Users, CheckCircle, Clock } from 'lucide-react';
 import { registrationsAPI, stakeholderGroupsAPI } from '../../utils/api';
