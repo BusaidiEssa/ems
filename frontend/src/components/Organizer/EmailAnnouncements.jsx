@@ -1,3 +1,5 @@
+//MASS EMAIL COMPONENT
+
 import { useState, useEffect } from 'react';
 import { Mail, Send, Loader } from 'lucide-react';
 import { stakeholderGroupsAPI, emailsAPI } from '../../utils/api';

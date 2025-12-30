@@ -13,7 +13,8 @@ const registrationSchema = new mongoose.Schema({
   },
   formData: {
     type: Map,
-    of: String
+    of: String,
+    default: () => new Map()
   },
   qrCode: {
     type: String,

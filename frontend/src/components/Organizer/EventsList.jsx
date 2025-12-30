@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, Plus, Loader } from 'lucide-react';
+import { Calendar, MapPin, Plus, Loader, Trash2, AlertCircle } from 'lucide-react';
 import { eventsAPI } from '../../utils/api';
 
 function EventsList() {
@@ -15,6 +15,8 @@ function EventsList() {
     description: ''
   });
   const [error, setError] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchEvents();
@@ -48,6 +50,22 @@ function EventsList() {
     }
   };
 
+  const handleDelete = async (eventId) => {
+    setDeleting(true);
+    setError('');
+    
+    try {
+      await eventsAPI.delete(eventId);
+      setEvents(events.filter(e => e._id !== eventId));
+      setDeleteConfirm(null);
+    } catch (err) {
+      console.error('Delete error:', err);
+      setError(err.response?.data?.message || 'Failed to delete event');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -70,7 +88,8 @@ function EventsList() {
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center gap-2">
+          <AlertCircle className="w-5 h-5" />
           {error}
         </div>
       )}
@@ -156,21 +175,38 @@ function EventsList() {
         {events.map((event) => (
           <div
             key={event._id}
-            onClick={() => navigate(`/dashboard/event/${event._id}`)}
-            className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition cursor-pointer"
+            className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition relative group"
           >
-            <h3 className="text-xl font-bold text-gray-800 mb-2">{event.title}</h3>
-            <div className="flex items-center gap-2 text-gray-600 mb-2">
-              <Calendar className="w-4 h-4" />
-              <span className="text-sm">
-                {new Date(event.date).toLocaleDateString()}
-              </span>
+            {/* Delete Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeleteConfirm(event);
+              }}
+              className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition opacity-0 group-hover:opacity-100"
+              title="Delete Event"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+
+            {/* Event Card Content */}
+            <div
+              onClick={() => navigate(`/dashboard/event/${event._id}`)}
+              className="cursor-pointer"
+            >
+              <h3 className="text-xl font-bold text-gray-800 mb-2 pr-10">{event.title}</h3>
+              <div className="flex items-center gap-2 text-gray-600 mb-2">
+                <Calendar className="w-4 h-4" />
+                <span className="text-sm">
+                  {new Date(event.date).toLocaleDateString()}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-600 mb-3">
+                <MapPin className="w-4 h-4" />
+                <span className="text-sm">{event.location}</span>
+              </div>
+              <p className="text-gray-500 text-sm line-clamp-2">{event.description}</p>
             </div>
-            <div className="flex items-center gap-2 text-gray-600 mb-3">
-              <MapPin className="w-4 h-4" />
-              <span className="text-sm">{event.location}</span>
-            </div>
-            <p className="text-gray-500 text-sm line-clamp-2">{event.description}</p>
           </div>
         ))}
       </div>
@@ -190,6 +226,55 @@ function EventsList() {
           >
             Create First Event
           </button>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-red-100 rounded-full">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800">Delete Event</h3>
+            </div>
+
+            <p className="text-gray-600 mb-2">
+              Are you sure you want to delete <strong>"{deleteConfirm.title}"</strong>?
+            </p>
+            <p className="text-sm text-red-600 mb-6">
+              ⚠️ This will permanently delete the event and all associated data (registrations, forms, emails).
+              This action cannot be undone.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleDelete(deleteConfirm._id)}
+                disabled={deleting}
+                className="flex-1 bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <Loader className="w-5 h-5 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-5 h-5" />
+                    Delete Event
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                disabled={deleting}
+                className="flex-1 bg-gray-200 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-300 transition font-semibold disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

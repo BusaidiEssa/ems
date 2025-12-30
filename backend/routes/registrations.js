@@ -8,9 +8,9 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
-//        EMAIL TRANSPORTER
-// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+//            EMAIL TRANSPORTER
+// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
 const createTransporter = () => {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
     console.warn('⚠️ Email not configured');
@@ -26,9 +26,9 @@ const createTransporter = () => {
   });
 };
 
-// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
-//          GET REGISTRATIONS
-// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+//            GET REGISTRATIONS
+// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
 router.get('/event/:eventId', authenticateToken, async (req, res) => {
   try {
     const registrations = await Registration.find({ 
@@ -49,9 +49,9 @@ router.get('/event/:eventId', authenticateToken, async (req, res) => {
   }
 });
 
-// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
-// CREATE REGISTRATION - FIXED UNIQUE QR CODE
-// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+// CREATE REGISTRATION - WITH CHECKBOX SUPPORT
+// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
 router.post('/', async (req, res) => {
   try {
     console.log('📥 Registration request');
@@ -80,27 +80,48 @@ router.post('/', async (req, res) => {
     console.log('✅ Event:', event.title);
     console.log('✅ Group:', group.name);
 
-    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
-    // SAVE REGISTRATION FIRST TO GET ID
-    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+    //  CONVERT ARRAY VALUES TO JSON STRINGS FOR STORAGE
+    //  (For checkbox fields that return arrays)
+    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+    const processedFormData = {};
+    for (const [key, value] of Object.entries(formData)) {
+      if (Array.isArray(value)) {
+        // Convert array to JSON string for storage in Map
+        processedFormData[key] = JSON.stringify(value);
+      } else {
+        processedFormData[key] = String(value || '');
+      }
+    }
+
+    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+    //     SAVE REGISTRATION FIRST TO GET ID
+    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
     console.log('💾 Creating registration...');
+    
+    // Create plain object for formData Map
+    const formDataEntries = Object.entries(processedFormData);
+    
     const registration = new Registration({
       eventId,
       stakeholderGroupId,
-      formData: new Map(Object.entries(formData)),
+      formData: formDataEntries.reduce((map, [key, value]) => {
+        map.set(key, value);
+        return map;
+      }, new Map()),
       qrCode: '', // Temporary, will update
       checkedIn: false
     });
 
-    await registration.save();
-    console.log('✅ Registration saved:', registration._id);
+    const savedRegistration = await registration.save();
+    console.log('✅ Registration saved:', savedRegistration._id);
 
-    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
     // GENERATE QR CODE WITH REGISTRATION ID
-    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
     console.log('🔲 Generating unique QR code...');
     const qrData = JSON.stringify({
-      registrationId: registration._id.toString(),
+      registrationId: savedRegistration._id.toString(),
       eventId: eventId,
       participantName: formData.Name || formData.name,
       timestamp: Date.now()
@@ -116,13 +137,13 @@ router.post('/', async (req, res) => {
     });
 
     // Update registration with QR code
-    registration.qrCode = qrCodeDataURL;
-    await registration.save();
+    savedRegistration.qrCode = qrCodeDataURL;
+    await savedRegistration.save();
     console.log('✅ QR code generated with registration ID');
 
-    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
-    //              SEND EMAIL
-    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+    //                SEND EMAIL
+    // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
     const transporter = createTransporter();
     const participantEmail = formData.Email || formData.email;
     const participantName = formData.Name || formData.name || 'Participant';
@@ -161,7 +182,7 @@ router.post('/', async (req, res) => {
                   <h3 style="color: #667eea;">Your Unique Check-in QR Code</h3>
                   <p style="color: #666; margin-bottom: 15px;">Your personal QR code is attached</p>
                   <img src="cid:qrcode" alt="QR Code" style="max-width: 250px; border: 4px solid #667eea; border-radius: 10px; padding: 10px; background: white;" />
-                  <p style="color: #999; font-size: 12px; margin-top: 10px;">Registration ID: ${registration._id}</p>
+                  <p style="color: #999; font-size: 12px; margin-top: 10px;">Registration ID: ${savedRegistration._id}</p>
                 </div>
 
                 <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px;">
@@ -177,7 +198,7 @@ router.post('/', async (req, res) => {
             </div>
           `,
           attachments: [{
-            filename: `event-qr-${registration._id}.png`,
+            filename: `event-qr-${savedRegistration._id}.png`,
             content: base64Data,
             encoding: 'base64',
             cid: 'qrcode'
@@ -191,14 +212,25 @@ router.post('/', async (req, res) => {
     }
 
     console.log('✅ Sending success response');
+    
+    // ✅ Parse back any JSON strings when sending response
+    const responseFormData = {};
+    for (const [key, value] of savedRegistration.formData.entries()) {
+      try {
+        responseFormData[key] = JSON.parse(value);
+      } catch {
+        responseFormData[key] = value;
+      }
+    }
+
     res.status(201).json({
       success: true,
       message: 'Registration successful!',
       registration: {
-        _id: registration._id,
-        qrCode: registration.qrCode,
-        formData: Object.fromEntries(registration.formData),
-        checkedIn: registration.checkedIn
+        _id: savedRegistration._id,
+        qrCode: savedRegistration.qrCode,
+        formData: responseFormData,
+        checkedIn: savedRegistration.checkedIn
       }
     });
 
@@ -212,9 +244,9 @@ router.post('/', async (req, res) => {
   }
 });
 
-// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
-//          TOGGLE CHECK-IN
-// 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
+// ============================================
+// TOGGLE CHECK-IN
+// ============================================
 router.patch('/:id/checkin', authenticateToken, async (req, res) => {
   try {
     const registration = await Registration.findById(req.params.id);

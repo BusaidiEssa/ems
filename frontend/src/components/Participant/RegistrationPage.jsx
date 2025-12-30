@@ -1,3 +1,5 @@
+// THe form the particpant sees
+
 import { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { Globe, Users, CheckCircle, Loader, ArrowLeft, AlertCircle } from 'lucide-react';
