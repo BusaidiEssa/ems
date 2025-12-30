@@ -37,7 +37,7 @@ export const authAPI = {
   signup: (userData) => api.post('/auth/signup', userData)
 };
 
-// Events API
+// Events API - UPDATED
 export const eventsAPI = {
   getAll: () => api.get('/events'),
   getOne: (id) => api.get(`/events/${id}`),
@@ -65,6 +65,28 @@ export const registrationsAPI = {
 export const emailsAPI = {
   send: (emailData) => api.post('/emails/send', emailData),
   getByEvent: (eventId) => api.get(`/emails/event/${eventId}`)
+};
+
+// Analytics API - NEW (3.4)
+export const analyticsAPI = {
+  getEventAnalytics: (eventId) => api.get(`/analytics/event/${eventId}`),
+  createSnapshot: (eventId) => api.post(`/analytics/snapshot/${eventId}`)
+};
+
+// Team API - NEW (3.8)
+export const teamAPI = {
+  getTeamMembers: (eventId) => api.get(`/team/event/${eventId}`),
+  inviteMember: (eventId, data) => api.post('/team/invite', { eventId, ...data }),
+  acceptInvite: (token) => api.post(`/team/accept/${token}`),
+  removeMember: (eventId, userId) => api.delete(`/team/event/${eventId}/member/${userId}`)
+};
+
+// Templates API - NEW (3.10)
+export const templatesAPI = {
+  getAll: () => api.get('/templates'),
+  create: (data) => api.post('/templates', data),
+  apply: (templateId, eventId) => api.post(`/templates/${templateId}/apply`, { eventId }),
+  delete: (id) => api.delete(`/templates/${id}`)
 };
 
 export default api;

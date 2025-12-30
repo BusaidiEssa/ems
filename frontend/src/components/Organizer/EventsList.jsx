@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, MapPin, Plus, Loader, Trash2, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { eventsAPI } from '../../utils/api';
 
 function EventsList() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -28,7 +31,7 @@ function EventsList() {
       setEvents(response.data.events);
     } catch (err) {
       console.error('Error fetching events:', err);
-      setError('Failed to load events');
+      setError(t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -46,7 +49,7 @@ function EventsList() {
         setFormData({ title: '', date: '', location: '', description: '' });
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create event');
+      setError(err.response?.data?.message || t('common.error'));
     }
   };
 
@@ -60,7 +63,7 @@ function EventsList() {
       setDeleteConfirm(null);
     } catch (err) {
       console.error('Delete error:', err);
-      setError(err.response?.data?.message || 'Failed to delete event');
+      setError(err.response?.data?.message || t('common.error'));
     } finally {
       setDeleting(false);
     }
@@ -77,13 +80,13 @@ function EventsList() {
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">My Events</h1>
+        <h1 className="text-3xl font-bold text-gray-800">{t('events.title')}</h1>
         <button
           onClick={() => setShowCreateForm(true)}
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
         >
           <Plus className="w-5 h-5" />
-          Create Event
+          {t('events.createEvent')}
         </button>
       </div>
 
@@ -96,11 +99,11 @@ function EventsList() {
 
       {showCreateForm && (
         <div className="bg-white p-6 rounded-lg shadow-lg mb-6">
-          <h2 className="text-xl font-bold mb-4">Create New Event</h2>
+          <h2 className="text-xl font-bold mb-4">{t('events.createNewEvent')}</h2>
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Event Title *
+                {t('events.eventTitle')} *
               </label>
               <input
                 type="text"
@@ -113,7 +116,7 @@ function EventsList() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date *
+                {t('events.eventDate')} *
               </label>
               <input
                 type="date"
@@ -125,7 +128,7 @@ function EventsList() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Location *
+                {t('events.location')} *
               </label>
               <input
                 type="text"
@@ -138,10 +141,10 @@ function EventsList() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
+                {t('events.description')} *
               </label>
               <textarea
-                placeholder="Describe your event..."
+                placeholder={t('events.description')}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -154,7 +157,7 @@ function EventsList() {
                 type="submit"
                 className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
               >
-                Create Event
+                {t('events.createEvent')}
               </button>
               <button
                 type="button"
@@ -164,7 +167,7 @@ function EventsList() {
                 }}
                 className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition"
               >
-                Cancel
+                {t('events.cancel')}
               </button>
             </div>
           </form>
@@ -177,19 +180,17 @@ function EventsList() {
             key={event._id}
             className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition relative group"
           >
-            {/* Delete Button */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 setDeleteConfirm(event);
               }}
               className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition opacity-0 group-hover:opacity-100"
-              title="Delete Event"
+              title={t('events.deleteEvent')}
             >
               <Trash2 className="w-4 h-4" />
             </button>
 
-            {/* Event Card Content */}
             <div
               onClick={() => navigate(`/dashboard/event/${event._id}`)}
               className="cursor-pointer"
@@ -215,16 +216,16 @@ function EventsList() {
         <div className="text-center py-12">
           <Calendar className="w-16 h-16 mx-auto mb-4 text-gray-400" />
           <h3 className="text-xl font-semibold text-gray-600 mb-2">
-            No events yet
+            {t('events.noEvents')}
           </h3>
           <p className="text-gray-500 mb-4">
-            Create your first event to get started
+            {t('events.createFirstEvent')}
           </p>
           <button
             onClick={() => setShowCreateForm(true)}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
           >
-            Create First Event
+            {t('events.createEvent')}
           </button>
         </div>
       )}
@@ -237,15 +238,14 @@ function EventsList() {
               <div className="p-3 bg-red-100 rounded-full">
                 <Trash2 className="w-6 h-6 text-red-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-800">Delete Event</h3>
+              <h3 className="text-xl font-bold text-gray-800">{t('events.deleteEvent')}</h3>
             </div>
 
             <p className="text-gray-600 mb-2">
-              Are you sure you want to delete <strong>"{deleteConfirm.title}"</strong>?
+              {t('events.confirmDelete')} <strong>"{deleteConfirm.title}"</strong>?
             </p>
             <p className="text-sm text-red-600 mb-6">
-              ⚠️ This will permanently delete the event and all associated data (registrations, forms, emails).
-              This action cannot be undone.
+              ⚠️ {t('events.deleteWarning')}
             </p>
 
             <div className="flex gap-3">
@@ -257,12 +257,12 @@ function EventsList() {
                 {deleting ? (
                   <>
                     <Loader className="w-5 h-5 animate-spin" />
-                    Deleting...
+                    {t('events.deleting')}
                   </>
                 ) : (
                   <>
                     <Trash2 className="w-5 h-5" />
-                    Delete Event
+                    {t('events.deleteEvent')}
                   </>
                 )}
               </button>
@@ -271,7 +271,7 @@ function EventsList() {
                 disabled={deleting}
                 className="flex-1 bg-gray-200 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-300 transition font-semibold disabled:opacity-50"
               >
-                Cancel
+                {t('events.cancel')}
               </button>
             </div>
           </div>
