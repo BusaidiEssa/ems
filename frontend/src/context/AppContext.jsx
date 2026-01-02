@@ -1,16 +1,19 @@
 import { createContext, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
+  const { i18n } = useTranslation();
   const [currentUser, setCurrentUser] = useState(null);
-  const [language, setLanguage] = useState('en');
   const [loading, setLoading] = useState(true);
+
+  // Get language from i18n directly
+  const language = i18n.language;
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
-    const savedLanguage = localStorage.getItem('language');
     
     if (token && user) {
       try {
@@ -21,16 +24,12 @@ export const AppProvider = ({ children }) => {
         localStorage.removeItem('user');
       }
     }
-
-    if (savedLanguage) {
-      setLanguage(savedLanguage);
-    }
     
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('language', language);
+    // Set document language and direction whenever i18n.language changes
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = language;
   }, [language]);
@@ -48,14 +47,14 @@ export const AppProvider = ({ children }) => {
   };
 
   const toggleLanguage = () => {
-    setLanguage(prev => prev === 'en' ? 'ar' : 'en');
+    const newLang = language === 'en' ? 'ar' : 'en';
+    i18n.changeLanguage(newLang);
   };
 
   const value = {
     currentUser,
     setCurrentUser,
     language,
-    setLanguage,
     toggleLanguage,
     login,
     logout,
