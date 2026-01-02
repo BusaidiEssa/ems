@@ -80,6 +80,8 @@ router.post('/', async (req, res) => {
     console.log('✅ Event:', event.title);
     console.log('✅ Group:', group.name);
 
+    
+
     // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
     //  CONVERT ARRAY VALUES TO JSON STRINGS FOR STORAGE
     //  (For checkbox fields that return arrays)
@@ -243,7 +245,31 @@ router.post('/', async (req, res) => {
     });
   }
 });
+router.delete('/:id', authenticateToken, async (req, res) => {
+      try {
+        const registration = await Registration.findOneAndDelete({
+          _id: req.params.id
+        });
 
+        if (!registration) {
+          return res.status(404).json({ 
+            success: false,
+            message: 'Registration not found' 
+          });
+        }
+
+        res.json({
+          success: true,
+          message: 'Registration deleted successfully'
+        });
+      } catch (error) {
+        res.status(500).json({ 
+          success: false,
+          message: 'Error deleting registration',
+          error: error.message 
+        });
+      }
+    });
 // ============================================
 // TOGGLE CHECK-IN
 // ============================================

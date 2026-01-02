@@ -9,6 +9,9 @@ import eventRoutes from './routes/events.js';
 import stakeholderGroupRoutes from './routes/stakeholderGroups.js';
 import registrationRoutes from './routes/registrations.js';
 import emailRoutes from './routes/emails.js';
+import analyticsRoutes from './routes/analytics.js';
+import teamRoutes from './routes/team.js';
+import templatesRoutes from './routes/templates.js';
 
 dotenv.config();
 
@@ -58,6 +61,9 @@ app.use('/api/events', eventRoutes);
 app.use('/api/stakeholder-groups', stakeholderGroupRoutes);
 app.use('/api/registrations', registrationRoutes);
 app.use('/api/emails', emailRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/team', teamRoutes);
+app.use('/api/templates', templatesRoutes);
 
 // 404 handler
 app.use((req, res) => {

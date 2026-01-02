@@ -58,7 +58,9 @@ export const stakeholderGroupsAPI = {
 export const registrationsAPI = {
   getByEvent: (eventId) => api.get(`/registrations/event/${eventId}`),
   create: (regData) => api.post('/registrations', regData),
-  toggleCheckIn: (id) => api.patch(`/registrations/${id}/checkin`)
+  toggleCheckIn: (id) => api.patch(`/registrations/${id}/checkin`),
+  delete: (id) => api.delete(`/registrations/${id}`)
+
 };
 
 // Emails API
