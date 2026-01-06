@@ -6,7 +6,8 @@ import {
   User, 
   BarChart3, 
   Users,
-  Globe 
+  Globe,
+  Settings
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import AppContext from '../../context/AppContext';
@@ -45,6 +46,12 @@ function Sidebar() {
       label: 'All Registrations',
       icon: Users,
       exact: false
+    },
+    {
+    path: '/dashboard/settings', // ADD THIS
+    label: 'Settings',
+    icon: Settings,
+    exact: false
     }
   ];
 

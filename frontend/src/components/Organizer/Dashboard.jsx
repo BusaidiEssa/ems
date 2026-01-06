@@ -6,6 +6,7 @@ import EventsList from './EventsList';
 import EventManagement from './EventManagement';
 import GlobalAnalytics from './GlobalAnalytics';
 import GlobalRegistrations from './GlobalRegistrations';
+import UserSettings from './UserSettings'; // ADD THIS
 
 function Dashboard() {
   const { currentUser } = useContext(AppContext);
@@ -23,6 +24,7 @@ function Dashboard() {
           <Route path="/event/:eventId/*" element={<EventManagement />} />
           <Route path="/analytics" element={<GlobalAnalytics />} />
           <Route path="/registrations" element={<GlobalRegistrations />} />
+          <Route path="/settings" element={<UserSettings />} /> 
         </Routes>
       </div>
     </div>
