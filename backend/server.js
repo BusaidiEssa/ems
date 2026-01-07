@@ -12,11 +12,13 @@ import emailRoutes from './routes/emails.js';
 import analyticsRoutes from './routes/analytics.js';
 import teamRoutes from './routes/team.js';
 import templatesRoutes from './routes/templates.js';
+import adminRoutes from './routes/admin.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
 
 // 🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺🐺
 //                MIDDLEWARE
@@ -64,6 +66,7 @@ app.use('/api/emails', emailRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/team', teamRoutes);
 app.use('/api/templates', templatesRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use((req, res) => {
